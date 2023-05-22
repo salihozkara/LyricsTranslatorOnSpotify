@@ -20,7 +20,7 @@ const translateText = async (text, targetLanguage) => {
         translatedTexts.push(element[0]);
       });
 
-      return translatedTexts.join(".");
+      return translatedTexts.join(" ");
     } else {
       throw new Error("Translation failed.");
     }
