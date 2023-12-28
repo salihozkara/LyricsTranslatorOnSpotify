@@ -11,4 +11,5 @@ const languages = [
   { code: "ja", longCode: "ja-JA", name: "日本語" },
   { code: "ko", longCode: "ko-KO", name: "한국어" },
   { code: "pt", longCode: "pt-PT", name: "Português" },
+  { code: "hi", longCode: "hi-HI", name: "Hindi" }
 ];
