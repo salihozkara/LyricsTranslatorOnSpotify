@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Lyrics Translator on Spotify",
-  "version": "1.0",
+  "version": "1.1",
   "description": "An extension that translates lyrics in Spotify.",
   "author": "Salih Özkara",
   "icons": {
