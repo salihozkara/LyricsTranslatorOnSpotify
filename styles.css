@@ -1,10 +1,23 @@
+  /* Button container */
 .button-container {
-    display: flex;
-  }
-  
-  .button-container select,
-  .button-container button,
-  .button-container input {
-    margin-right: 10px;
-  }
+  display: flex; /* Arrange buttons horizontally */
+  align-items: center; /* Align vertically */
+  margin: 10px auto; /* Add some margin for spacing */
+}
+
+.button-container button,
+.button-container input[type="color"],
+.button-container select{
+  padding: 8px 16px; /* Consistent padding for buttons and color picker */
+  border: 1px solid #ddd; /* Basic border for buttons and color picker */
+  border-radius: 4px; /* Rounded corners for buttons and color picker */
+  cursor: pointer; /* Indicate clickable elements */
+  margin-right: 5px; /* Spacing between buttons */
+}
+
+.button-container input[type="color"] {
+  padding: 0; /* Remove padding for color picker */
+  border: none; /* Remove border for color picker */
+}
+
   

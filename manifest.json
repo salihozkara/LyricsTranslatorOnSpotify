@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Lyrics Translator on Spotify",
-  "version": "1.2",
-  "description": "An extension that translates lyrics in Spotify.",
+  "version": "1.2.1",
+  "description": "Translate song lyrics in Spotify quickly and easily.",
   "author": "Salih Özkara",
   "icons": {
     "16": "icon-16.png",
@@ -14,16 +14,13 @@
     "storage",
     "scripting"
   ],
-  "background": {
-    "service_worker": "background.js"
-  },
   "action": {
     "default_popup": "popup.html"
   },
   "content_scripts": [
     {
       "matches": ["http://open.spotify.com/*", "https://open.spotify.com/*"],
-      "js": ["content.js"]
+      "js": ["common.js", "content.js"]
     }
   ]
 }

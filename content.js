@@ -1,110 +1,28 @@
-const TranslateSonglyrics = "translate-song-lyrics";
-
-const ResetSonglyrics = "reset-song-lyrics";
-
-const SongLyricsSelector = '[data-testid="fullscreen-lyric"] div';
-
-const LyricsLoaded = "lyrics-loaded";
-
-
-const translateText = async (text, targetLanguage) => {
-  const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLanguage}&dt=t&q=${encodeURIComponent(
-    text
-  )}`;
-
-  try {
-    const response = await fetch(url);
-    const data = await response.json();
-    var translatedTexts = [];
-    if (data && data[0]) {
-      data[0].forEach((element) => {
-        translatedTexts.push(element[0]);
-      });
-
-      return translatedTexts.join(" ");
-    } else {
-      throw new Error("Translation failed.");
-    }
-  } catch (error) {
-    console.error("Translation error:", error);
-  }
-};
-
-const getSongLyrics = () =>
-  document
-    .querySelectorAll(SongLyricsSelector);
-
-async function translateLyrics(lyrics, targetLanguage, lyricsColor) {
-  if (lyrics.getElementsByTagName("p")[0]) {
-    return;
-  }
-
-  var lyricsText = lyrics.innerText;
-  if (lyricsText) {
-    var translatedLyrics = await translateText(
-      lyricsText.toString(),
-      targetLanguage
-    );
-
-    if(translatedLyrics.toString().toLocaleLowerCase() === lyricsText.toString().toLocaleLowerCase()){
-      return;
-    }
-
-    let html =
-      '<p class="' +
-      LyricsLoaded +
-      '" style="color: ' + lyricsColor + ';">' +
-      translatedLyrics +
-      "</p>";
-    lyrics.innerHTML += html;
-  }
-}
-
-async function translateSongLyrics(targetLanguage, lyricsColor) {
-  await resetSongLyrics();
-
-  var songLyrics = getSongLyrics();
-
-  for (let lyrics of songLyrics) {
-    await translateLyrics(lyrics, targetLanguage, lyricsColor);
-  }
-}
-
-async function resetSongLyrics() {
-  var songLyrics = getSongLyrics();
-
-  for (let lyrics of songLyrics) {
-    let loadedLyrics = lyrics.getElementsByClassName(LyricsLoaded);
-    for (let loadedLyric of loadedLyrics) {
-      loadedLyric.remove();
-    }
-  }
-}
-
-
 function loaded() {
-  chrome.storage.sync.get(
-    ["lyricsColor"],
-    function (result) {
-      if (!result.lyricsColor) {
-        chrome.storage.sync.set({ lyricsColor: "#00ff00" });
-      }
+  chrome.storage.sync.get([lyricsColorKey], function (result) {
+    if (!result[lyricsColorKey]) {
+      chrome.storage.sync.set({ lyricsColor: "#00ff00" });
     }
-  );
+  });
   chrome.storage.sync.get(
-    ["autoTranslate", "defaultTargetLanguage", "lyricsColor"],
+    [autoTranslateKey, defaultTargetLanguageKey, lyricsColorKey],
     function (result) {
-      if (result.autoTranslate) {
-        translateSongLyrics(result.defaultTargetLanguage, result.lyricsColor);
+      if (result[autoTranslateKey]) {
+        translateSongLyrics(result[defaultTargetLanguageKey], result[lyricsColorKey]);
       }
     }
   );
 }
 
 var targetDiv = document.querySelector(SongLyricsSelector);
+var contentObserver = new MutationObserver(function (mutations) {
+  mutations.forEach(async function (mutation) {
+    await load(mutation.addedNodes);
+  });
+});
 var observer = new MutationObserver(function (mutations) {
   mutations.forEach(function (mutation) {
-    newFunction(mutation.addedNodes, observer);
+    observeContents(mutation.addedNodes, observer);
   });
 });
 
@@ -114,14 +32,21 @@ if (targetDiv) {
   observer.observe(document.body, { childList: true, subtree: true });
 }
 
-async function load(divs){
+async function load(divs) {
   divs.forEach(async (div) => {
-    if(div.parentElement && div.parentElement.classList.contains(SongLyricsSelector)){
+    if (
+      div.parentElement &&
+      div.parentElement.classList.contains(SongLyricsSelector)
+    ) {
       chrome.storage.sync.get(
-        ["autoTranslate", "defaultTargetLanguage", "lyricsColor"],
+        [autoTranslateKey, defaultTargetLanguageKey, lyricsColorKey],
         async function (result) {
-          if (result.autoTranslate) {
-            await translateLyrics(div, result.defaultTargetLanguage, result.lyricsColor);
+          if (result[autoTranslateKey]) {
+            await translateLyrics(
+              div,
+              result[defaultTargetLanguageKey],
+              result[lyricsColorKey]
+            );
           }
         }
       );
@@ -129,10 +54,13 @@ async function load(divs){
   });
 }
 
-function newFunction(addedNodes, observer) {
+function observeContents(addedNodes, observer) {
   for (var i = 0; i < addedNodes.length; i++) {
-    if ((addedNodes[i].classList &&
-      addedNodes[i].matches(SongLyricsSelector)) || (addedNodes[i] instanceof HTMLElement && addedNodes[i].querySelectorAll(SongLyricsSelector).length != 0)) {
+    if (
+      (addedNodes[i].classList && addedNodes[i].matches(SongLyricsSelector)) ||
+      (addedNodes[i] instanceof HTMLElement &&
+        addedNodes[i].querySelectorAll(SongLyricsSelector).length != 0)
+    ) {
       observeDivContent(addedNodes[i]);
       break;
     }
@@ -141,12 +69,5 @@ function newFunction(addedNodes, observer) {
 
 function observeDivContent(div) {
   loaded();
-  var contentObserver = new MutationObserver(function (mutations) {
-    mutations.forEach(async function (mutation) {
-      let addedNodes = mutation.addedNodes;
-      await load(addedNodes);
-    });
-  });
   contentObserver.observe(div, { childList: true, subtree: true });
 }
-

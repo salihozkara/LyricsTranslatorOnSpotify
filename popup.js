@@ -1,30 +1,39 @@
-const TranslateSonglyrics = "translate-song-lyrics";
-
-const ResetSonglyrics = "reset-song-lyrics";
-
-const SongLyricsClass = "esRByMgBY3TiENAsbDHA";
-
-const LyricsLoaded = "lyrics-loaded";
-
-const reset = async () =>
-  chrome.runtime.sendMessage({
-    action: ResetSonglyrics,
+function runScript(args, func) {
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    // Use the Scripting API to execute a script
+    chrome.scripting.executeScript({
+      target: { tabId: tabs[0].id },
+      args: args,
+      func: func,
+    });
   });
+}
 
-const translate = async () => {
+function callReset() {
+  runScript([], resetSongLyrics);
+}
+
+function callTranslate() {
   const targetLanguage = document.getElementById("languageSelect").value;
   const lyricsColor = document.getElementById("lyricsColor").value;
-  chrome.runtime.sendMessage({
-    action: TranslateSonglyrics,
-    targetLanguage: targetLanguage,
-    lyricsColor: lyricsColor,
-  });
+  runScript([targetLanguage, lyricsColor], translateSongLyrics);
 };
 
-const getDefaultLanguage = () => {
-  let defaultTargetLanguage = chrome.storage.sync.get([
-    "defaultTargetLanguage",
-  ]);
+function callChangeLanguage() {
+  const targetLanguage = document.getElementById("languageSelect").value;
+  runScript([targetLanguage], changeLanguage);
+};
+
+
+function callChangeColor() {
+  const lyricsColor = document.getElementById("lyricsColor").value;
+  runScript([lyricsColor], changeColor);
+};
+
+async function getDefaultLanguage () {
+  let defaultTargetLanguage = (await chrome.storage.sync.get([
+    defaultTargetLanguageKey,
+  ]))[defaultTargetLanguageKey];
   if (!defaultTargetLanguage) {
     defaultTargetLanguage = navigator.language || navigator.userLanguage;
     if (defaultTargetLanguage) {
@@ -36,18 +45,29 @@ const getDefaultLanguage = () => {
 };
 
 document.addEventListener("DOMContentLoaded", async () => {
-  chrome.storage.sync.get(["defaultTargetLanguage"], (result) => {
+  chrome.storage.sync.get([defaultTargetLanguageKey], async (result) => {
     let defaultLanguage =
-      result.defaultTargetLanguage ||
+      result[defaultTargetLanguageKey] ||
       navigator.language ||
       navigator.userLanguage;
     let languageSelect = document.getElementById("languageSelect");
 
     languageSelect.addEventListener("change", () => {
       addDefaultLanguageToLocalStorage(languageSelect.value);
+      callChangeLanguage();
     });
 
-    for (let language of languages) {
+    var disabledLanguages = (await chrome.storage.sync.get(["disabledLanguages"])).disabledLanguages || [];
+    var customLanguages = (await chrome.storage.sync.get(["customLanguages"])).customLanguages || [];
+    var activeLanguages = languages.filter((language) => !disabledLanguages.includes(language.code)).concat(customLanguages);
+
+    activeLanguages = activeLanguages.reduce((acc, language) => {
+      if (!acc.find((l) => l.code === language.code)) {
+        acc.push(language);
+      }
+      return acc;
+    }, []);
+    for (let language of activeLanguages){
       let option = document.createElement("option");
       option.value = language.code;
       option.text = language.name;
@@ -60,20 +80,23 @@ document.addEventListener("DOMContentLoaded", async () => {
   chrome.storage.sync.get(["autoTranslate"], (result) => {
     autoTranslateCheckbox.checked = result.autoTranslate;
   });
-  autoTranslateCheckbox.addEventListener("change", async () => {
+  autoTranslateCheckbox.addEventListener("change", () => {
     chrome.storage.sync.set({ autoTranslate: autoTranslateCheckbox.checked });
     if (autoTranslateCheckbox.checked) {
-      await translate();
+      callTranslate();
     }
   });
 
   loadLyricsColorFromLocalStorage();
-  document.getElementById("lyricsColor").addEventListener("change", () => {
-    addLyricsColorToLocalStorage();
-  });
+  document
+    .getElementById("lyricsColor")
+    .addEventListener("change", () => {
+      addLyricsColorToLocalStorage();
+      callChangeColor();
+    });
 });
 
-document.getElementById("resetButton").addEventListener("click", reset);
+document.getElementById("resetButton").addEventListener("click", callReset);
 
 const addDefaultLanguageToLocalStorage = (defaultTargetLanguage) => {
   chrome.storage.sync.set({ defaultTargetLanguage: defaultTargetLanguage });
@@ -95,7 +118,11 @@ const loadLyricsColorFromLocalStorage = () => {
 
 document
   .getElementById("translateButton")
-  .addEventListener("click", async () => {
-    await reset();
-    await translate();
+  .addEventListener("click", () => {
+    callReset();
+    callTranslate();
   });
+
+document.getElementById("editLanguages").addEventListener("click", () => {
+  window.open("editLanguages.html", "_blank");
+});

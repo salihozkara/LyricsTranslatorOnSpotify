@@ -1,0 +1,91 @@
+body {
+    font-family: sans-serif;
+}
+
+.languages-box {
+    width: 80%;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+h2 {
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.languages-list {
+    list-style: none;
+    padding: 0;
+}
+
+.languages-list li {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.language-name,
+.language-code {
+    margin-right: auto;
+}
+
+.language-code {
+    font-size: 0.8em;
+    color: #666;
+}
+
+.disable-button,
+.enable-button,
+.save-button,
+.delete-button {
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.save-button {
+    background-color: #4CAF50;
+    border: none;
+    color: white;
+}
+
+.delete-button {
+    background-color: #f44336;
+    border: none;
+    color: white;
+}
+
+input[type="text"] {
+    padding: 5px;
+    border: 1px solid #ccc;
+}
+
+.disable-button {
+    background-color: red;
+}
+
+.enable-button {
+    background-color: #4CAF50;
+}
+.switch-button {
+    cursor: pointer;
+    border-radius: 5px; /* For rounded corners */
+    margin-right: 5px; /* Spacing between buttons */
+    border: 1px solid #ccc;
+    color: white;
+  }
+  
+  .switch-button:not([disabled]) {
+    color: white;
+    background-color: #ccc; /* Gray color for disabled button */
+  }
+  
+  .switch-button.disabled {
+    cursor: default; /* Remove pointer cursor on disabled button */
+    /* No need for color change as text inherits from parent */
+  }
+
+
+  
