@@ -18,7 +18,6 @@ const translate = async (targetLanguage) =>
   });
 
 const getDefaultLanguage = () => {
-  debugger;
   let defaultTargetLanguage = chrome.storage.sync.get([
     "defaultTargetLanguage",
   ]);
