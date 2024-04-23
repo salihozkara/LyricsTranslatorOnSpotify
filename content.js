@@ -2,7 +2,7 @@ const TranslateSonglyrics = "translate-song-lyrics";
 
 const ResetSonglyrics = "reset-song-lyrics";
 
-const SongLyricsClass = "esRByMgBY3TiENAsbDHA";
+const SongLyricsSelector = '[data-testid="fullscreen-lyric"] div';
 
 const LyricsLoaded = "lyrics-loaded";
 
@@ -31,8 +31,7 @@ const translateText = async (text, targetLanguage) => {
 
 const getSongLyrics = () =>
   document
-    .getElementsByClassName(SongLyricsClass)[0]
-    .getElementsByTagName("div");
+    .querySelectorAll(SongLyricsSelector);
 
 async function translateLyrics(lyrics, targetLanguage) {
   if (lyrics.getElementsByTagName("p")[0]) {
@@ -61,6 +60,7 @@ async function translateLyrics(lyrics, targetLanguage) {
 }
 
 async function translateSongLyrics(targetLanguage) {
+  debugger;
   await resetSongLyrics();
 
   var songLyrics = getSongLyrics();
@@ -93,11 +93,11 @@ function loaded() {
   );
 }
 
-var targetDiv = document.querySelector("." + SongLyricsClass);
+var targetDiv = document.querySelector("." + SongLyricsSelector);
 
 async function load(divs){
   divs.forEach(async (div) => {
-    if(div.parentElement && div.parentElement.classList.contains(SongLyricsClass)){
+    if(div.parentElement && div.parentElement.classList.contains(SongLyricsSelector)){
       chrome.storage.sync.get(
         ["autoTranslate", "defaultTargetLanguage"],
         async function (result) {
@@ -133,7 +133,7 @@ if (targetDiv) {
 function newFunction(addedNodes, observer) {
   for (var i = 0; i < addedNodes.length; i++) {
     if ((addedNodes[i].classList &&
-      addedNodes[i].classList.contains(SongLyricsClass)) || (addedNodes[i] instanceof HTMLElement && addedNodes[i].getElementsByClassName(SongLyricsClass).length != 0)) {
+      addedNodes[i].classList.contains(SongLyricsSelector)) || (addedNodes[i] instanceof HTMLElement && addedNodes[i].getElementsByClassName(SongLyricsSelector).length != 0)) {
       observeDivContent(addedNodes[i]);
       break;
     }
