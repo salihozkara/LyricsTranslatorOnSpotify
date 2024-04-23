@@ -6,6 +6,7 @@ const SongLyricsSelector = '[data-testid="fullscreen-lyric"] div';
 
 const LyricsLoaded = "lyrics-loaded";
 
+
 const translateText = async (text, targetLanguage) => {
   const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLanguage}&dt=t&q=${encodeURIComponent(
     text
@@ -33,7 +34,7 @@ const getSongLyrics = () =>
   document
     .querySelectorAll(SongLyricsSelector);
 
-async function translateLyrics(lyrics, targetLanguage) {
+async function translateLyrics(lyrics, targetLanguage, lyricsColor) {
   if (lyrics.getElementsByTagName("p")[0]) {
     return;
   }
@@ -52,21 +53,20 @@ async function translateLyrics(lyrics, targetLanguage) {
     let html =
       '<p class="' +
       LyricsLoaded +
-      '" style="color: #00ff00;">' +
+      '" style="color: ' + lyricsColor + ';">' +
       translatedLyrics +
       "</p>";
     lyrics.innerHTML += html;
   }
 }
 
-async function translateSongLyrics(targetLanguage) {
-  debugger;
+async function translateSongLyrics(targetLanguage, lyricsColor) {
   await resetSongLyrics();
 
   var songLyrics = getSongLyrics();
 
   for (let lyrics of songLyrics) {
-    await translateLyrics(lyrics, targetLanguage);
+    await translateLyrics(lyrics, targetLanguage, lyricsColor);
   }
 }
 
@@ -84,25 +84,44 @@ async function resetSongLyrics() {
 
 function loaded() {
   chrome.storage.sync.get(
-    ["autoTranslate", "defaultTargetLanguage"],
+    ["lyricsColor"],
+    function (result) {
+      if (!result.lyricsColor) {
+        chrome.storage.sync.set({ lyricsColor: "#00ff00" });
+      }
+    }
+  );
+  chrome.storage.sync.get(
+    ["autoTranslate", "defaultTargetLanguage", "lyricsColor"],
     function (result) {
       if (result.autoTranslate) {
-        translateSongLyrics(result.defaultTargetLanguage);
+        translateSongLyrics(result.defaultTargetLanguage, result.lyricsColor);
       }
     }
   );
 }
 
-var targetDiv = document.querySelector("." + SongLyricsSelector);
+var targetDiv = document.querySelector(SongLyricsSelector);
+var observer = new MutationObserver(function (mutations) {
+  mutations.forEach(function (mutation) {
+    newFunction(mutation.addedNodes, observer);
+  });
+});
+
+if (targetDiv) {
+  observer.observe(targetDiv, { childList: true });
+} else {
+  observer.observe(document.body, { childList: true, subtree: true });
+}
 
 async function load(divs){
   divs.forEach(async (div) => {
     if(div.parentElement && div.parentElement.classList.contains(SongLyricsSelector)){
       chrome.storage.sync.get(
-        ["autoTranslate", "defaultTargetLanguage"],
+        ["autoTranslate", "defaultTargetLanguage", "lyricsColor"],
         async function (result) {
           if (result.autoTranslate) {
-            await translateLyrics(div, result.defaultTargetLanguage);
+            await translateLyrics(div, result.defaultTargetLanguage, result.lyricsColor);
           }
         }
       );
@@ -110,28 +129,10 @@ async function load(divs){
   });
 }
 
-if (targetDiv) {
-  var observer = new MutationObserver(function (mutations) {
-    mutations.forEach(function (mutation) {
-      newFunction(mutation.addedNodes, observer);
-    });
-  });
-
-  observer.observe(targetDiv, { childList: true });
-} else {
-  var observer = new MutationObserver(function (mutations) {
-    mutations.forEach(function (mutation) {
-      newFunction(mutation.addedNodes, observer);
-    });
-  });
-
-  observer.observe(document.body, { childList: true, subtree: true });
-}
-
 function newFunction(addedNodes, observer) {
   for (var i = 0; i < addedNodes.length; i++) {
     if ((addedNodes[i].classList &&
-      addedNodes[i].classList.contains(SongLyricsSelector)) || (addedNodes[i] instanceof HTMLElement && addedNodes[i].getElementsByClassName(SongLyricsSelector).length != 0)) {
+      addedNodes[i].matches(SongLyricsSelector)) || (addedNodes[i] instanceof HTMLElement && addedNodes[i].querySelectorAll(SongLyricsSelector).length != 0)) {
       observeDivContent(addedNodes[i]);
       break;
     }
@@ -148,3 +149,4 @@ function observeDivContent(div) {
   });
   contentObserver.observe(div, { childList: true, subtree: true });
 }
+

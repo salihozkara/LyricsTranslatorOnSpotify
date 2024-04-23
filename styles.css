@@ -3,7 +3,8 @@
   }
   
   .button-container select,
-  .button-container button {
+  .button-container button,
+  .button-container input {
     margin-right: 10px;
   }
   

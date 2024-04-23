@@ -11,11 +11,15 @@ const reset = async () =>
     action: ResetSonglyrics,
   });
 
-const translate = async (targetLanguage) =>
+const translate = async () => {
+  const targetLanguage = document.getElementById("languageSelect").value;
+  const lyricsColor = document.getElementById("lyricsColor").value;
   chrome.runtime.sendMessage({
     action: TranslateSonglyrics,
     targetLanguage: targetLanguage,
+    lyricsColor: lyricsColor,
   });
+};
 
 const getDefaultLanguage = () => {
   let defaultTargetLanguage = chrome.storage.sync.get([
@@ -56,8 +60,16 @@ document.addEventListener("DOMContentLoaded", async () => {
   chrome.storage.sync.get(["autoTranslate"], (result) => {
     autoTranslateCheckbox.checked = result.autoTranslate;
   });
-  autoTranslateCheckbox.addEventListener("change", () => {
+  autoTranslateCheckbox.addEventListener("change", async () => {
     chrome.storage.sync.set({ autoTranslate: autoTranslateCheckbox.checked });
+    if (autoTranslateCheckbox.checked) {
+      await translate();
+    }
+  });
+
+  loadLyricsColorFromLocalStorage();
+  document.getElementById("lyricsColor").addEventListener("change", () => {
+    addLyricsColorToLocalStorage();
   });
 });
 
@@ -67,11 +79,23 @@ const addDefaultLanguageToLocalStorage = (defaultTargetLanguage) => {
   chrome.storage.sync.set({ defaultTargetLanguage: defaultTargetLanguage });
 };
 
+const addLyricsColorToLocalStorage = () => {
+  let lyricsColor = document.getElementById("lyricsColor").value;
+  chrome.storage.sync.set({ lyricsColor: lyricsColor });
+};
+
+const loadLyricsColorFromLocalStorage = () => {
+  chrome.storage.sync.get(["lyricsColor"], (result) => {
+    let lyricsColor = result.lyricsColor;
+    if (lyricsColor) {
+      document.getElementById("lyricsColor").value = lyricsColor;
+    }
+  });
+};
+
 document
   .getElementById("translateButton")
   .addEventListener("click", async () => {
-    const targetLanguage = document.getElementById("languageSelect").value;
-    addDefaultLanguageToLocalStorage(targetLanguage);
     await reset();
-    await translate(targetLanguage);
+    await translate();
   });
