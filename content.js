@@ -111,8 +111,6 @@ async function load(divs){
 }
 
 if (targetDiv) {
-  console.log("Div sayfada mevcut");
-
   var observer = new MutationObserver(function (mutations) {
     mutations.forEach(function (mutation) {
       newFunction(mutation.addedNodes, observer);
