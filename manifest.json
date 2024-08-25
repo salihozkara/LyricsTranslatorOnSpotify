@@ -1,26 +1,38 @@
 {
-  "manifest_version": 3,
-  "name": "Lyrics Translator on Spotify",
-  "version": "1.2.1",
-  "description": "Translate song lyrics in Spotify quickly and easily.",
-  "author": "Salih Özkara",
-  "icons": {
-    "16": "icon-16.png",
-    "48": "icon-48.png",
-    "128": "icon-128.png"
-  },
-  "permissions": [
-    "activeTab",
-    "storage",
-    "scripting"
-  ],
-  "action": {
-    "default_popup": "popup.html"
-  },
-  "content_scripts": [
-    {
-      "matches": ["http://open.spotify.com/*", "https://open.spotify.com/*"],
-      "js": ["common.js", "content.js"]
+    "manifest_version": 3,
+    "name": "Lyrics Translator on Spotify",
+    "version": "1.2.1",
+    "description": "Translate song lyrics in Spotify quickly and easily.",
+    "author": "Salih \u00d6zkara",
+    "icons": {
+        "16": "icon-16.png",
+        "48": "icon-48.png",
+        "128": "icon-128.png"
+    },
+    "permissions": [
+        "activeTab",
+        "storage",
+        "scripting"
+    ],
+    "action": {
+        "default_popup": "popup.html"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "http://open.spotify.com/*",
+                "https://open.spotify.com/*"
+            ],
+            "js": [
+                "common.js",
+                "content.js"
+            ]
+        }
+    ],
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "lyrics_translator@firefox",
+            "strict_min_version": "68.0"
+        }
     }
-  ]
 }
