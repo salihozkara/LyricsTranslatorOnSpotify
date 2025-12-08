@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Lyrics Translator on Spotify",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Translate song lyrics in Spotify quickly and easily.",
   "author": "Salih Özkara",
   "icons": {
