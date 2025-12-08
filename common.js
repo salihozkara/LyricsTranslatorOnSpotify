@@ -1,5 +1,5 @@
 const LyricsLoaded = "lyrics-loaded";
-const SongLyricsSelector = '[data-testid="fullscreen-lyric"] div';
+const SongLyricsSelector = '[data-testid="lyrics-line"] div';
 const lyricsColorKey = "lyricsColor";
 const autoTranslateKey = "autoTranslate";
 const defaultTargetLanguageKey = "defaultTargetLanguage";
